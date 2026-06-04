@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Te Amo - Hello Kitty Edition</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body, #root {
+    background: linear-gradient(135deg, #ffe5ec 0%, #ffc2d1 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Nunito', sans-serif;
+    overflow: hidden;
+  }
+
+  #root {
+    position: relative;
+    width: 100%;
+    min-height: 550px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  canvas#stars {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .kitty-card {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.85);
+    border: 4px solid #ff8fab;
+    border-radius: 32px;
+    box-shadow: 0 16px 32px rgba(255, 143, 171, 0.3);
+    backdrop-filter: blur(8px);
+    padding: 35px 24px;
+    width: min(420px, 90vw);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .kitty-icon-wrap {
+    position: relative;
+    display: inline-block;
+    font-size: 60px;
+    line-height: 1;
+    margin-bottom: 5px;
+    animation: floating 3s ease-in-out infinite;
+  }
+
+  @keyframes floating {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(3deg); }
+  }
+
+  .word-display {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .lang-label {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #ff477e;
+    opacity: 0;
+    animation: fadeLabel 0.5s ease 0.1s forwards;
+  }
+
+  .love-word {
+    font-size: clamp(26px, 6vw, 44px);
+    font-weight: 900;
+    color: #ff5c8a;
+    text-shadow: 2px 2px 0px #fff, 4px 4px 0px #ffe5ec;
+    opacity: 0;
+    transform: scale(0.8) translateY(10px);
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  @keyframes popIn {
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes fadeLabel {
+    to { opacity: 0.85; }
+  }
+
+  .counter {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ff8fab;
+    letter-spacing: 0.5px;
+  }
+
+  .progress-bar-wrap {
+    width: 80%;
+    height: 8px;
+    background: #fff0f3;
+    border: 2px solid #ffb3c6;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #ff758f, #ff477e);
+    transition: width 0.2s ease-out;
+  }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ctrl-btn {
+    background: #fff;
+    border: 2px solid #ffb3c6;
+    color: #ff5c8a;
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 0px #ffb3c6;
+    transition: all 0.1s ease;
+  }
+  .ctrl-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0px #ffb3c6;
+  }
+  .ctrl-btn:hover {
+    background: #fff0f3;
+    border-color: #ff758f;
+  }
+  .ctrl-btn.active {
+    background: #ff477e;
+    color: #fff;
+    border-color: #ff477e;
+    box-shadow: 0 4px 0px #ff0a54;
+  }
+  .ctrl-btn.active:active {
+    box-shadow: 0 1px 0px #ff0a54;
+  }
+
+  .floating-hearts {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .fh {
+    position: absolute;
+    bottom: -50px;
+    font-size: 26px;
+    opacity: 0;
+    animation: floatUp var(--dur) ease-in forwards;
+    animation-delay: var(--delay);
+  }
+
+  @keyframes floatUp {
+    0%   { opacity: 0; transform: translateY(0) scale(0.6); }
+    15%  { opacity: 0.9; }
+    85%  { opacity: 0.7; }
+    100% { opacity: 0; transform: translateY(-520px) scale(1.3) rotate(var(--rot)); }
+  }
+</style>
+</head>
+<body>
+
+<div id="root">
+  <canvas id="stars"></canvas>
+  <div class="floating-hearts" id="fhearts"></div>
+  
+  <div class="kitty-card">
+    <div class="kitty-icon-wrap">🎀</div>
+    
+    <div class="word-display">
+      <div class="lang-label" id="langLabel">Español Mexicano</div>
+      <div class="love-word" id="loveWord">Te amo</div>
+    </div>
+    
+    <div class="counter" id="counter">1 / 300</div>
+    
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    
+    <div class="controls">
+      <button class="ctrl-btn" id="prevBtn">Anterior</button>
+      <button class="ctrl-btn active" id="playBtn">⏸ Pausa</button>
+      <button class="ctrl-btn" id="nextBtn">Siguiente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const data = [
+["Español Mexicano","Te amo"],["Náhuatl de la Huasteca","Nimitztlazohtla"],["Náhuatl de Guerrero","Nimitztlasojtla"],["Náhuatl del Centro","Nimitztlajotla"],["Maya Yucateco","In yaakumech"],["Zapoteco del Istmo","Nadxieli"],["Zapoteco de la Sierra","Cal rri huanidza"],["Mixteco de la Costa","Kuni jitoi nsi`i"],["Mixteco de la Alta","Kuni jitoi"],["Otomí / Hñähñu","Hmadi"],["Tseltal","Jk'anbat"],["Tzotzil","Jk'ankot"],["Purépecha / Tarasco","Uandajperakua"],["Tarahumara / Rarámuri","Tasi niga ba"],["Totonaco","Kaxatli"],["Huasteco / Téenek","In lew'al ts'ale"],["Mixe / Ayöök","Ntsëj kyptsë"],["Mazahua","Sijmi"],["Huichol / Wixárika","Zeiyá teme"],["Cora / Náayeri","Naata'u tzaa"],["Yaqui / Hiaki","Inepu a maccane"],["Mayo / Yoreme","Inepu a maccane"],["Seri / Cuncáac","Tsi iic canoj"],["Kumeyaay / Diegueño","Jii tya am"],["Paipai","Mat kuñami"],["Triqui","Gane'e á n'gwi"],["Zoque","Te' ntsame"],["Popoluca","Tzam jicta"],["Tojolabal","Syajni'šex"],["Ch'ol","Mic juelñel"],["Inglés Americano","I love you"],["Inglés Canadiense","I love you, eh"],["Navajo / Diné","Ayóó anííníshní"],["Cheroqui / Cherokee","Gvgeyuhi"],["Ojibwe / Chippewa","Gizaagi'in"],["Cree del Pantano","Kisakahitin"],["Cree de las Llanuras","Kisakihitin"],["Inuktitut","Nagligivagit"],["Inupiaq","Piqpagiigin"],["Yupik","Kenkemken"],["Lakota / Sioux","Techihila"],["Dakota","Cante tanyan ciye"],["Choctaw","Chi hollo li"],["Hopi","Nu' umi unangwa'ta"],["Blackfoot / Siksika","Kitakimmatskoo"],["Mohawk","Konoronkwa"],["Zuni","Tom ho' o tewa"],["Apache Jicarilla","She' nzhóní"],["Apache Chiricahua","Shiñee nzhoní"],["Shoshone","Nemi tushun tami"],["Comanche","U kamakutu"],["Haida","Dáng ga tll ḵíngang"],["Tlingit","Xat i can"],["Salish Interior","En msalten"],["Garífuna","Nuguya gari buni"],["K'iche'","Katwaj"],["Kaqchikel","Yat nwayoj"],["Mam","Tza j k'anb'a"],["Q'eqchi'","Naxraajo"],["Bribri","Shki"],["Guna / Kuna","Be nae be guet"],["Emberá","Mua bʉmʉ jʉ̃ãbʉ́"],["Wayuu","Aishi pia pülau"],["Nasa Yuwe","Ew fshantsi"],["Quechua Cuzqueño","Munakuyki"],["Quechua Ancashino","Kuyajmi"],["Kichwa","Canda munani"],["Aymara","Munasmawa"],["Guaraní Paraguayo","Rohayhu"],["Guaraní Correntino","Roheihu"],["Mapudungun","Ayüwün mimi"],["Asháninka","Nictasandami"],["Shipibo-Conibo","Miaraz mi mi mënve"],["Awajún / Aguaruna","Aneajme"],["Ticuna","Kuügematü"],["Yanomami","Ya rami"],["Warao","Yakera tito"],["Pemon","Wakü pe iye"],["Tupí Antiguo","Oroîssu"],["Macushi","Uula' tîî'"],["Chiquitano","Auburampari tush"],["Español / Castellano Estándar","Te amo"],["Gallego","Ámote"],["Catalán / Valenciano / Balear","T'estimo"],["Euskera / Vasco","Maite zaitut"],["Asturiano / Bable","Quérote"],["Leonés","Quiérote"],["Aragonés","T'enquiero"],["Cántabro / Montañés","Te tajo"],["Extremeño","Te tami"],["Fala de Xálima","Amodoti"],["Español Andaluz","Te ami"],["Español Canario","Te quiero mucho"],["Francés Estándar","Je t'aime"],["Portugués de Portugal","Eu amo-te"],["Portugués de Brasil","Eu te amo"],["Mirandés","Yo te amo"],["Italiano Estándar","Ti amo"],["Napolitano","T'amo"],["Siciliano","T'ama"],["Veneciano","Te amo"],["Sardo Campidanes","T'amo"],["Sardo Logudores","T'amo meda"],["Piamontés","Mi i t'veuri ben"],["Lombardo","Te voeuri ben"],["Ligur / Genovés","Mi te voeggio ben"],["Friulano","O ti vuei ben"],["Occitano Lenguadociano","T'aimi"],["Provenzal","T'ame"],["Gascon / Aranés","T'aimi"],["Bretón","Da garout a ran"],["Corso","Ti tengu caru"],["Normando","Je t'aime"],["Picardo","Os t'aime"],["Gallo","Je t'aime"],["Valón","Dji t'veûs volunteer"],["Romanche","Jau t'am"],["Rumano","Te iubesc"],["Arumano","T'icuescu"],["Meglenorrumano","Te iubesg"],["Istrorrumano","Te iubešć"],["Inglés Británico","I love you"],["Inglés de Escocia","I luve ye"],["Irlandés / Gaeilge","Táim i bhrá leat"],["Gaélico Escocés","Tha gaol agam ort"],["Galés / Cymraeg","Rwy'n dy garu di"],["Cornuallés","My a'th kar"],["Manés","Ta graih aym ort"],["Alemán Estándar","Ich liebe dich"],["Bávaro","I hab di gern"],["Suizo Alemán","Ich lieb dich"],["Kölsch","Ich han dich gän"],["Plattdeutsch","Ik leev di"],["Luxemburgués","Ech hunn dech gären"],["Yiddish","Ikh hob dikh lib"],["Neerlandés / Holandés","Ik hou van je"],["Flamenco","Ik zie u geerne"],["Limburgués","Ich hauw van dich"],["Frisón Occidental","Ik hald fan dy"],["Frisón Septentrional","Ik hääw de liif"],["Saterfrisón","Ik hääb de ljou"],["Danés","Jeg elsker dig"],["Sueco","Jag älskar dig"],["Noruego Bokmål","Jeg elsker deg"],["Noruego Nynorsk","Eg elskar deg"],["Islandés","Ég elska þig"],["Feroés","Eg elski teg"],["Ruso","Я тебя люблю"],["Ucraniano","Я тебе кохаю"],["Bielorruso","Я цябе кахаю"],["Polaco","Kocham cię"],["Checo","Miluji tě"],["Eslovaco","Ľúbim ťa"],["Esloveno","Ljubim te"],["Croata","Volim te"],["Serbio","Volim te"],["Bosnio","Volim te"],["Montenegrino","Volim te"],["Macedonio","Те сакам"],["Búlgaro","Обичам те"],["Sorabo Superior","Ja śi mam rady"],["Sorabo Inferior","Ja śi mam rad"],["Casubio","Jô ce kòchóm"],["Silesio","Przaja ci"],["Letón","Es tevi mīlu"],["Lituano","Aš tave myliu"],["Finés","Minä rakastan sinua"],["Estonio","Ma armastan sind"],["Húngaro","Szeretlek"],["Sami Septentrional","Mon ráhkistan du"],["Sami Inari","Mun rähistan tuu"],["Carelio","Minä armastan šinuo"],["Griego Moderno","Σ' αγаπώ"],["Albanés Gheg","Të dua"],["Albanés Tosk","Unë të dua"],["Maltés","Inħobbok"],["Chino Mandarín","我爱你"],["Cantonés","我愛你"],["Hokkien / Taiwanés","我愛汝"],["Hakka","Ngai oi ngi"],["Shanghainés / Wu","Ngo long huan nong"],["Japonés Estándar","愛してる"],["Japonés de Kansai","Suki ya nen"],["Okinawaense","Wan ee tji canee"],["Coreano Estándar","사랑해"],["Coreano de Jeju","Saranghamdeeda"],["Mongol","Би чамд хайртай"],["Tibetano Estándar","Nga rang la gá"],["Uigur","Men séni süyimen"],["Hindi","Main tumse pyar karta hoon"],["Urdu","Main tumse mohabbat karta hoon"],["Bengalí","Ami tomake bhalobashi"],["Punjabi","Main tuhanu pyar karda han"],["Maratí","Me tujhyavar prem karto"],["Guyaratí","Hoon tane prem karoon choon"],["Tamil","Naan unnai kadhalikiren"],["Telugu","Nenu ninnu premistunnanu"],["Canarés / Kannada","Naanu ninna preetisuttene"],["Malayalam","Njan ninne premikunnu"],["Nepalí","Ma timilai maya garchu"],["Cingalés","Mama oyata adarei"],["Filipino / Tagalo","Mahal kita"],["Ilocano","Ay-ayaten ka"],["Cebuano","Gihigugma ko ikaw"],["Hiligaynon","Palangga ko ikaw"],["Vietnamita Norte","Anh yêu em"],["Vietnamita Sur","Em yêu anh"],["Tailandés Estándar","ฉันรักคุณ"],["Jemer / Camboyano","Slanh oun"],["Laosiano","Khon hak jao"],["Birmano","Chit pa de"],["Indonesio Estándar","Saya cinta kamu"],["Malayo Estándar","Saya cintakan mu"],["Javanés","Kulo tresno panjenengan"],["Sundanés","Abdi bogoh ka anjeun"],["Tetun","Hau hadomi o"],["Árabe Estándar","أنا أحبك"],["Árabe Egipcio","Ana bahebak"],["Árabe Levantino","Ana bhibbak"],["Árabe Marroquí","Kanbghik"],["Persa / Farsi","دوстت دارم"],["Tayiko","Man turo dūst medoram"],["Pashto","Za ta sara meena laram"],["Turco","Seni seviyorum"],["Azerí","Mən səni sevirəm"],["Kazajo","Men seni süyemin"],["Uzbeko","Men seni sevaman"],["Hebreo (m→f)","אני אוهב אותך"],["Hebreo (f→m)","אני אוהבת אותך"],["Armenio Oriental","Yes kez sirum em"],["Armenio Occidental","Yes kez g'sirem"],["Georgiano","Me shen mikvarkhar"],["Kurdo Kurmanji","Ez te hez dikim"],["Kurdo Sorani","Min tò pwosh dewê"],["Checheno","Suno hjo deza"],["Suajili","Nakupenda"],["Zulú","Ngiyakuthanda"],["Xhosa","Ndiyakuthanda"],["Afrikáans","Ek het jou lief"],["Sotho del Sur","Ke a go rata"],["Yoruba","Mo nifẹ rẹ"],["Igbo","A hụrụ m gị n'anya"],["Hausa","Ina son ki"],["Wolof","Nob naa la"],["Bambara","M'bi fe"],["Akan / Twi","Me dɔ wo"],["Lingala","Nalingi yo"],["Amárico","Ewedihalehu"],["Oromo","Sin jaladha"],["Somalí","Wa kugu jeclahay"],["Shona","Ndinokuda"],["Kinyarwanda","Ndagukunda"],["Malgache","Tia anao aho"],["Bereber / Tamazight","Rikh kem"],["Maorí","Aroha nui ki a koe"],["Hawayano","Aloha au iā 'oe"],["Samoano","Ou te alofa ia te oe"],["Tahitiano","Ua here vau ia oe"],["Fiyiano","Au domoni iko"],["Tongano","'Ofa 'atu"],["Rapa Nui","Hangahanga au kia koe"],["Chamorro","Hu guaiya hao"],["Marshallés","Yokwe yuk"],["Esperanto","Mi amas vin"],["Ido","Me amas vu"],["Interlingua","Io te ama"],["Volapük","Löfob oli"],["Toki Pona","mi olin e sina"],["Klingon","QamuSHa'"],["Élfico Quenya","Melin tyë"],["Élfico Sindarin","Melin le"],["Dothraki","Anha zhilak yera norethaan"],["Alto Valyrio","Avy jorālān"],["Na'vi","Oel ngati kameie"],["Latín Clásico","Te amo"],["Sánscrito","Tvayi snihyāmi"],["Nórdico Antiguo","Ek elska þik"],["Inglés Antiguo","Ic lufie þē"],["Gótico","Ik frijō þuk"]
+];
+
+let current = 0;
+let playing = true;
+let interval = null;
+const INTERVAL_MS = 2200;
+
+const langLabel = document.getElementById('langLabel');
+const loveWord = document.getElementById('loveWord');
+const counter = document.getElementById('counter');
+const progressFill = document.getElementById('progressFill');
+const playBtn = document.getElementById('playBtn');
+const fhearts = document.getElementById('fhearts');
+
+function showEntry(i) {
+  langLabel.style.animation = 'none';
+  loveWord.style.animation = 'none';
+  void langLabel.offsetWidth;
+  void loveWord.offsetWidth;
+  langLabel.textContent = data[i][0];
+  loveWord.textContent = data[i][1];
+  langLabel.style.animation = 'fadeLabel 0.5s ease 0.1s forwards';
+  loveWord.style.animation = 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+  counter.textContent = `${i+1} / ${data.length}`;
+  progressFill.style.width = `${((i+1)/data.length)*100}%`;
+  if (i % 3 === 0) spawnKittyElements();
+}
+
+function spawnKittyElements() {
+  const kittyItems = ['🎀','🍎','🐱','💖','✨','💝','🤍'];
+  for (let k = 0; k < 6; k++) {
+    const el = document.createElement('div');
+    el.className = 'fh';
+    el.textContent = kittyItems[Math.floor(Math.random()*kittyItems.length)];
+    el.style.setProperty('--dur', (3 + Math.random()*2.5) + 's');
+    el.style.setProperty('--delay', (k * 0.15) + 's');
+    el.style.setProperty('--rot', (Math.random()*70-35) + 'deg');
+    el.style.left = (5 + Math.random() * 90) + '%';
+    fhearts.appendChild(el);
+    setTimeout(() => el.remove(), 5500);
+  }
+}
+
+function next() {
+  current = (current + 1) % data.length;
+  showEntry(current);
+}
+
+function prev() {
+  current = (current - 1 + data.length) % data.length;
+  showEntry(current);
+}
+
+function startInterval() {
+  clearInterval(interval);
+  interval = setInterval(next, INTERVAL_MS);
+}
+
+function togglePlay() {
+  playing = !playing;
+  if (playing) {
+    playBtn.textContent = '⏸ Pausa';
+    playBtn.classList.add('active');
+    startInterval();
+  } else {
+    playBtn.textContent = '▶ Play';
+    playBtn.classList.remove('active');
+    clearInterval(interval);
+  }
+}
+
+document.getElementById('prevBtn').onclick = () => { prev(); if(playing) startInterval(); };
+document.getElementById('nextBtn').onclick = () => { next(); if(playing) startInterval(); };
+playBtn.onclick = togglePlay;
+
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+
+function resizeCanvas() {
+  const parent = canvas.parentElement;
+  canvas.width = parent.offsetWidth;
+  canvas.height = parent.offsetHeight || 550;
+  stars = Array.from({length: 80}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 2 + 0.5,
+    a: Math.random(),
+    speed: 0.005 + Math.random()*0.01,
+    color: Math.random() > 0.5 ? 'rgba(255,255,255,' : 'rgba(255,182,193,'
+  }));
+}
+
+function drawStars() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    s.a += s.speed;
+    const alpha = 0.4 + 0.6 * Math.abs(Math.sin(s.a));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    ctx.fillStyle = `${s.color}${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+drawStars();
+showEntry(0);
+startInterval();
+spawnKittyElements();
+</script>
+</body>
+</html>
